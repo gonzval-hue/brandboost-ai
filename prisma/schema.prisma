@@ -1,0 +1,99 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  clients       Client[]
+  campaigns     Campaign[]
+  @@map("users")
+}
+
+model Client {
+  id              String    @id @default(cuid())
+  userId          String
+  company_name    String
+  industry        String
+  description     String    @db.Text
+  brand_values    String    @db.Text
+  tone_of_voice   String
+  visual_style    String
+  target_audience String    @db.Text
+  keywords        String    @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaigns       Campaign[]
+  @@map("clients")
+}
+
+model Campaign {
+  id              String          @id @default(cuid())
+  clientId        String
+  userId          String
+  title           String
+  platform        String
+  draft_count     Int             @default(1)
+  ai_instructions String          @db.Text
+  status          CampaignStatus  @default(DRAFT)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  client          Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generatedContents GeneratedContent[]
+  @@map("campaigns")
+}
+
+model GeneratedContent {
+  id            String        @id @default(cuid())
+  campaignId    String
+  text_content  String        @db.Text
+  image_url     String?
+  status        ContentStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  campaign      Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  scheduledPosts ScheduledPost[]
+  @@map("generated_contents")
+}
+
+model ScheduledPost {
+  id                 String    @id @default(cuid())
+  generatedContentId String
+  scheduled_at       DateTime
+  status             String
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  generatedContent   GeneratedContent @relation(fields: [generatedContentId], references: [id], onDelete: Cascade)
+  @@map("scheduled_posts")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum CampaignStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PUBLISHED
+}
+
+enum ContentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
