@@ -67,12 +67,6 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
-}
-ardContent>
-        </Card>
-      </div>
       {/* We will add the client list here later */}
     </div>
   );
