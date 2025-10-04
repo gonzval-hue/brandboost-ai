@@ -23,7 +23,7 @@ model User {
 
 model Client {
   id              String    @id @default(cuid())
-  userId          String
+  userId          String?
   company_name    String
   industry        String
   description     String    @db.Text
@@ -34,7 +34,7 @@ model Client {
   keywords        String    @db.Text
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   campaigns       Campaign[]
   @@map("clients")
 }
@@ -42,7 +42,7 @@ model Client {
 model Campaign {
   id              String          @id @default(cuid())
   clientId        String
-  userId          String
+  userId          String?
   title           String
   platform        String
   draft_count     Int             @default(1)
@@ -51,7 +51,7 @@ model Campaign {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   client          Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   generatedContents GeneratedContent[]
   @@map("campaigns")
 }
